@@ -1,0 +1,2 @@
+cryptography
+disnake==2.6.1
