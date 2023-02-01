@@ -7,3 +7,5 @@ __pycache__
 /babel/v2.0/*
 /config/v1.x/*
 /config/v2.0/*
+credentials.json
+token.json
