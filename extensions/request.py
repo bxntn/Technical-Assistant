@@ -54,11 +54,11 @@ class Request(commands.Cog):
             print(f"An error occurred: {error}")
             return error
 
-        message = '**ข้อความจะถูกลบใน 60 วินาที**'
+        message = '**ข้อความจะถูกลบใน 60 วินาที**\n'
 
         for i,data in enumerate(datarows):
             if str(inter.author.id) in data:
-                message += f'\nBootcamp ID: {data[0]} \nEmail: {data[11]} \nTechnical Preflop App Password: {accountrows[i][2]} \nคะแนนรวม: {scorerows[i][1]}'
+                message += f'\n**Bootcamp ID**: {data[0]} \n**Email**: {data[11]} \n**Technical Preflop App Password**: {accountrows[i][2]} \n**คะแนนรวม**: {scorerows[i][1]}'
         if not message:
             message += '\nNot found your id in database'
         await inter.send(content=message, delete_after=60.0)

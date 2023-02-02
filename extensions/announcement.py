@@ -20,7 +20,7 @@ class Announcement(commands.Cog):
                             dm_permission=False)
     async def annouce(
         self,
-        inter:disnake.ApplicationCommandInteraction,channel_id
+        inter:disnake.ApplicationCommandInteraction,channel_name
         # key_of:str
         
     ):
@@ -56,15 +56,36 @@ class Announcement(commands.Cog):
         temp_board = df.sort_values(by=['total_score'],axis=0,ascending=False)
         board = temp_board[['ID','total_score']].values.tolist()
         
-        guild_id = inter.guild_id
-        guild = self.bot.get_guild(guild_id)
-        
-        name = []
+        guilds = self.bot.guilds
+        channels = []
+        for guild in guilds:
+            for cn in guild.text_channels:
+                channels.append(cn)
+
+        channelMap = {}
+        for c in channels:
+            channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
+
         message = f'**คะแนนรวมสูงสุด 10 อันดับแรก**'
         for i in range(10):
             message += f"\n{board[i][0]} with score {board[i][1]}"
-        channel = self.bot.get_channel(int(channel_id))
+        channel = self.bot.get_channel(channelMap[channel_name])
         await channel.send(content=message)
+        await inter.send("Message has been sent")
+
+    @annouce.autocomplete('channel_name')
+    async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, channel_name: str):
+        guilds = self.bot.guilds
+        channels = []
+        for guild in guilds:
+            for cn in guild.text_channels:
+                channels.append(cn)
+        
+        CHANNEL_OF = [f"[{ch.guild.name}] {ch.name}" for ch in channels]
+        return [ key
+            for key in CHANNEL_OF
+            if channel_name.lower() in key.lower()
+        ]
 
     
     
