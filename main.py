@@ -36,21 +36,6 @@ class TpBot(commands.AutoShardedBot):
 		with open('token.json', 'w') as token:
 			token.write(creds.to_json())
 
-	creds = None
-	if os.path.exists('token.json'):
-		creds = Credentials.from_authorized_user_file('token.json', config['googlesheet']['scope'])
-	# If there are no (valid) credentials available, let the user log in.
-	if not creds or not creds.valid:
-		if creds and creds.expired and creds.refresh_token:
-			creds.refresh(Request())
-		else:
-			flow = InstalledAppFlow.from_client_secrets_file(
-				config['googlesheet']['credential'], config['googlesheet']['scope'])
-			creds = flow.run_local_server(port=0)
-   # Save the credentials for the next run
-		with open('token.json', 'w') as token:
-			token.write(creds.to_json())
-
 	def __init__(self, **kwargs):
     
 		print(f"""

@@ -40,7 +40,7 @@ class Announcement(commands.Cog):
             service = build('sheets', 'v4', credentials=creds)
 
             result = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='Discord user!A:D').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A:D').execute()
             rows = result.get('values', [])
 
         except HttpError as error:
