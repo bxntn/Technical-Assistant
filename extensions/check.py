@@ -17,17 +17,34 @@ class Check(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(dm_permission=False)
-    @commands.default_member_permissions(manage_guild=False, moderate_members=True)
+    @commands.default_member_permissions(manage_guild=True, moderate_members=True)
     async def check_homework(self, inter: disnake.ApplicationCommandInteraction, homework, point, guild_id, channel_id, start_time, end_time):
 
+        creds = self.bot.creds
+
+        try:
+            service = build('sheets', 'v4', credentials=creds)
+            print("service build successful\n")
+            result = service.spreadsheets().values().get(
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:AB').execute()
+            rows = result.get('values', [])
+
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return error
+
+        df = pd.DataFrame(rows[1:],columns=rows[0])
+        board = df[['ID','discord_dev_id','Discord ID','Email ที่ใช้ลงทะเบียน website','ชื่อ','นามสกุล']].values
+        
+
         guild = self.bot.get_guild(int(guild_id))
-        # if inter.author.id not in self.admins:
-        #     inter.send("You are not allowed to use this command")
-        #     return
 
         # Gathering data
-        db = np.empty([0, 4])
         if guild:
+            for row in board:
+                row[-2] = None
+                row[-1] = 0
+
             channel = guild.get_channel(int(channel_id))
             if channel:
                 start = start_time.split("/")
@@ -36,38 +53,22 @@ class Check(commands.Cog):
                     int(start[0]), int(start[1]), int(start[2]))
                 end_date = datetime(int(end[0]), int(end[1]), int(end[2]))
 
-                messages = await channel.history(limit=123, before=end_date, after=start_date).flatten()
+                messages = await channel.history(limit=400, before=end_date, after=start_date).flatten()
                 for message in messages:
                     Mid = message.id
                     Did = message.author.id
                     Aid = message.author.name + '#' + message.author.discriminator
                     reactions = message.reactions
                     emojis = [reaction.emoji for reaction in reactions]
-                    if '✅' in emojis:
-                        # print(
-                        #     f"The message : ([{message.id}] {message.content}) from authorID : {message.author.id}, author name : {message.author.name}#{message.author.discriminator} ")
-                        index = np.argwhere(db == str(Did))
-                        if len(index) != 0:
-                            db[index[0][0]][3] = int(point)
-                            db[index[0][0]][2] = Mid
-                        else:
-                            data = np.array(
-                                [[str(Did), Aid, Mid, int(point)]])
-                            db = np.append(db, data, axis=0)
-                    else:
-                        index = np.argwhere(db == str(Did))
-                        if len(index) == 0:
-                            data = np.array([[str(Did), Aid, Mid, int(0)]])
-                            db = np.append(db, data, axis=0)
+                    index = np.argwhere(board == str(Did))
+
+                    #if found in database
+                    if len(index) != 0:
+                        board[index[0][0]][-2] = str(Mid)
+                        if '✅' in emojis:  
+                            board[index[0][0]][-1] = int(point)
             else:
                 await inter.send(f"The channel with ID{channel_id} is not found")
-            for member in guild.members:
-                Did = member.id
-                Aid = member.name + '#' + member.discriminator
-                index = np.argwhere(db == str(Did))
-                if len(index) == 0:
-                    data = np.array([[str(Did),Aid,None,0]])
-                    db = np.append(db,data,axis=0)
         else:
             await inter.send(f"Guild with ID {guild_id} is not found")
         print('collect db succesful\n')
@@ -79,15 +80,12 @@ class Check(commands.Cog):
         print("cred checked\n")
 
         try:
-
-            service = build('sheets', 'v4', credentials=creds)
-            print("service build successful\n")
-            values = db.tolist()
+            values = board.tolist()
             body = {
                 'values': values
             }
             result = service.spreadsheets().values().update(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range=f"{homework}!A2:D",
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range=f"{homework}!A2:F",
                 valueInputOption= 'USER_ENTERED', body=body).execute()
             print(f"{result.get('updatedCells')} cells updated.")
             return result
@@ -102,6 +100,10 @@ class Check(commands.Cog):
             for key in KEY_OF
             if user_input.lower() in key.lower()
         ]
+
+    @check_homework.autocomplete('guild_id')
+    async def guild_autocomp(self,inter:disnake.ApplicationCommandInteraction, guild_name: str):
+        self.bot.guilds
 
 def setup(bot) -> None:
     """ Bind this cog to the bot """

@@ -15,6 +15,7 @@ class Request(commands.Cog):
 
     @commands.cooldown(1, 1)
     @commands.dm_only()
+    @commands.default_member_permissions(manage_guild=True, moderate_members=True)
     @commands.slash_command(name='profile',
                             description='Get password for bootcamp website')
     async def request_key(
@@ -39,22 +40,28 @@ class Request(commands.Cog):
         try:
             service = build('sheets', 'v4', credentials=creds)
 
-            result = service.spreadsheets().values().get(
+            dataResult = service.spreadsheets().values().get(
                 spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A2:AB').execute()
-            rows = result.get('values', [])
+            scoreResult = service.spreadsheets().values().get(
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A2:B').execute()
+            accountResult = service.spreadsheets().values().get(
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='preflop_account!A2:C').execute()
+            datarows = dataResult.get('values', [])
+            scorerows = scoreResult.get('values', [])
+            accountrows = accountResult.get('values',[])
 
         except HttpError as error:
             print(f"An error occurred: {error}")
             return error
 
-        message = '**Message will be delete in 30 seconds**'
+        message = '**ข้อความจะถูกลบใน 60 วินาที**'
 
-        for i in rows:
-            if str(inter.author.id) in i:
-                message += f'\nYour Bootcamp id : {i[0]} \nYour java-app password : {i[25]} \nEmail : {i[11]} \nTotal Score : {i[27]}'
+        for i,data in enumerate(datarows):
+            if str(inter.author.id) in data:
+                message += f'\nBootcamp ID: {data[0]} \nEmail: {data[11]} \nTechnical Preflop App Password: {accountrows[i][2]} \nคะแนนรวม: {scorerows[i][1]}'
         if not message:
             message += '\nNot found your id in database'
-        await inter.send(content=message, delete_after=30.0)
+        await inter.send(content=message, delete_after=60.0)
 
         # print(f"{user.id}"
 
