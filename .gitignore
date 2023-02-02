@@ -9,3 +9,5 @@ __pycache__
 /config/v2.0/*
 credentials.json
 token.json
+*.DS_Store
+

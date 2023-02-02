@@ -12,11 +12,29 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+
 class TpBot(commands.AutoShardedBot):
 	"""this is the core of the merely framework."""
 	config = Config()
 	babel = Babel(config)
 	verbose = False
+	# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config['googlesheet']['credential']
+	# print(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+ 
+	creds = None
+	if os.path.exists('token.json'):
+		creds = Credentials.from_authorized_user_file('token.json', config['googlesheet']['scope'])
+	# If there are no (valid) credentials available, let the user log in.
+	if not creds or not creds.valid:
+		if creds and creds.expired and creds.refresh_token:
+			creds.refresh(Request())
+		else:
+			flow = InstalledAppFlow.from_client_secrets_file(
+				config['googlesheet']['credential'], config['googlesheet']['scope'])
+			creds = flow.run_local_server(port=0)
+   # Save the credentials for the next run
+		with open('token.json', 'w') as token:
+			token.write(creds.to_json())
 
 	creds = None
 	if os.path.exists('token.json'):
@@ -34,6 +52,7 @@ class TpBot(commands.AutoShardedBot):
 			token.write(creds.to_json())
 
 	def __init__(self, **kwargs):
+    
 		print(f"""
 		technicalpoker framework{' beta' if self.config.getboolean('main', 'beta') else ''} v{self.config['main']['ver']}
 		currently named {self.config['main']['botname']} by config, uses {self.config['main']['prefix_short']}

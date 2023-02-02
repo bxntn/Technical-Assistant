@@ -1,9 +1,10 @@
 import disnake
 from disnake.ext import commands
 
+
+import google.auth
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -13,9 +14,11 @@ class Request(commands.Cog):
         self.bot = bot
 
     @commands.cooldown(1,1)
+    @commands.dm_only()
     @commands.command(name = 'profile',
                             description= 'Get password for bootcamp website')
     async def request_key(
+        self,
         inter:disnake.ApplicationCommandInteraction,
         # key_of:str
         
@@ -30,19 +33,29 @@ class Request(commands.Cog):
         BC_COL = ''
         JAVA_COL = ''
         
-        creds, _ = google.auth.default()
+        creds = self.bot.creds
         # pylint: disable=maybe-no-member
+        
         try:
             service = build('sheets', 'v4', credentials=creds)
 
-            result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_name).execute()
+            result = service.spreadsheets().values().get(
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='Discord user!A2:C').execute()
             rows = result.get('values', [])
-            print(f"{len(rows)} rows retrieved")
-            return result
+
         except HttpError as error:
             print(f"An error occurred: {error}")
             return error
         
+
+        message = '**Message will be delete in 30 seconds**'
+        
+        for i in rows:
+            if str(inter.author.id) in i:
+                message += f'\nYour Bootcamp id is: {i[1]} \nYour java-app password is {i[2]} \n'
+        if not message:
+            message += '\nNot found your id in database'
+            
         await inter.send(content=message,delete_after=30.0)
         
         # print(f"{user.id}"
@@ -57,8 +70,8 @@ class Request(commands.Cog):
     #     ]
         
     
-
-    
 def setup(bot) -> None:
-    """ Bind this cog to the bot """
-    bot.add_cog(Request(bot))
+	""" Bind this cog to the bot """
+	bot.add_cog(Request(bot))
+ 
+
