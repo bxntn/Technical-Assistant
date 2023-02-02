@@ -5,6 +5,8 @@ import google.auth
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import numpy as np
+import pandas as pd
 
 
 class Request(commands.Cog):
@@ -41,14 +43,21 @@ class Request(commands.Cog):
             service = build('sheets', 'v4', credentials=creds)
 
             dataResult = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A2:AB').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:AB').execute()
             scoreResult = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A2:B').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A1:B').execute()
             accountResult = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='preflop_account!A2:C').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='preflop_account!A1:C').execute()
             datarows = dataResult.get('values', [])
             scorerows = scoreResult.get('values', [])
             accountrows = accountResult.get('values',[])
+
+            datadf = pd.DataFrame(datarows[1:], columns=datarows[0])
+            databoard = datadf[['discord_dev_id','ID']].values
+            accountdf = pd.DataFrame(accountrows[1:], columns=accountrows[0])
+            accountboard = accountdf[['ID','Email','Password']].values
+            scoredf = pd.DataFrame(scorerows[1:], columns=scorerows[0])
+            scoreboard = scoredf[['ID','total_score']].values
 
         except HttpError as error:
             print(f"An error occurred: {error}")
@@ -56,22 +65,16 @@ class Request(commands.Cog):
 
         message = '**ข้อความจะถูกลบใน 60 วินาที**\n'
 
-        for i,data in enumerate(datarows):
+        for i,data in enumerate(databoard):
             if str(inter.author.id) in data:
-                message += f'\n**Bootcamp ID**: {data[0]} \n**Email**: {data[11]} \n**Technical Preflop App Password**: {accountrows[i][2]} \n**คะแนนรวม**: {scorerows[i][1]}'
+                message += f'\n**Bootcamp ID**: {data[1]} \n**Email**: {accountboard[i][1]} \n**Technical Preflop App Password**: {accountboard[i][2]} \n**คะแนนรวม**: {scoreboard[i][1]}'
         if not message:
             message += '\nNot found your id in database'
         await inter.send(content=message, delete_after=60.0)
 
-        # print(f"{user.id}"
 
-    # @request_key.autocomplete("key_of")
-    # async def key_autocomp(inter: disnake.ApplicationCommandInteraction, user_input: str):
-    #     KEY_OF = ("bootcamp","java-app")
-    #     return [ key
-    #         for key in KEY_OF
-    #         if user_input.lower() in key.lower()
-    #     ]
+
+        
 
 
 def setup(bot) -> None:

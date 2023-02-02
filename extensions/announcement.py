@@ -15,10 +15,10 @@ class Announcement(commands.Cog):
 
     @commands.cooldown(1,1)
     @commands.default_member_permissions(manage_guild=True, moderate_members=True)
-    @commands.slash_command(name = 'announce',
+    @commands.slash_command(name = 'announce_rank',
                             description= 'Announce a score descending',
                             dm_permission=False)
-    async def annouce(
+    async def annouce_rank(
         self,
         inter:disnake.ApplicationCommandInteraction,channel_name
         # key_of:str
@@ -42,10 +42,6 @@ class Announcement(commands.Cog):
             result = service.spreadsheets().values().get(
                 spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A:B').execute()
             rows = result.get('values', [])
-
-            data = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A:B').execute()
-            datarows = data.get('values', [])
 
         except HttpError as error:
             print(f"An error occurred: {error}")
@@ -73,7 +69,7 @@ class Announcement(commands.Cog):
         await channel.send(content=message)
         await inter.send("Message has been sent")
 
-    @annouce.autocomplete('channel_name')
+    @annouce_rank.autocomplete('channel_name')
     async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, channel_name: str):
         guilds = self.bot.guilds
         channels = []
@@ -87,7 +83,35 @@ class Announcement(commands.Cog):
             if channel_name.lower() in key.lower()
         ]
 
+    @commands.slash_command(dm_permission=False)
+    @commands.default_member_permissions(manage_guild=True, moderate_members=True)
+    async def firstannounce(self,inter: disnake.ApplicationCommandInteraction, channel_name):
+        guilds = self.bot.guilds
+        channels = []
+        for guild in guilds:
+            for cn in guild.text_channels:
+                channels.append(cn)
+
+        channelMap = {}
+        for c in channels:
+            channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
+        channel = self.bot.get_channel(channelMap[channel_name])
+        await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง /profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**')
+        await inter.send('Announced')
     
+    @firstannounce.autocomplete('channel_name')
+    async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, ch_name: str):
+        guilds = self.bot.guilds
+        channels = []
+        for guild in guilds:
+            for cn in guild.text_channels:
+                channels.append(cn)
+        
+        CHANNEL_OF = [f"[{ch.guild.name}] {ch.name}" for ch in channels]
+        return [ key
+            for key in CHANNEL_OF
+            if ch_name.lower() in key.lower()
+        ]
     
 def setup(bot) -> None:
 	""" Bind this cog to the bot """
