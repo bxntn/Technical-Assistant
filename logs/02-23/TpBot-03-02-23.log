@@ -1,0 +1,44 @@
+announcement loaded.
+check loaded.
+request loaded.
+An error occurred: <HttpError 400 when requesting https://sheets.googleapis.com/v4/spreadsheets/1GD3zRAzxpOQPTPZheOcuql_3iikd8mU7okt2dfKyZj4/values/info%21A1%3AAB?alt=json returned "Unable to parse range: info!A1:AB". Details: "Unable to parse range: info!A1:AB">
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+service build successful
+
+collect db succesful
+
+cred checked
+
+560 cells updated.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.
+announcement loaded.
+check loaded.
+request loaded.
+exited.

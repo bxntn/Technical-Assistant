@@ -62,9 +62,10 @@ class Announcement(commands.Cog):
         for c in channels:
             channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
 
-        message = f'**คะแนนรวมสูงสุด 10 อันดับแรก**'
+        message = f'**---- คะแนนรวมสูงสุด 10 อันดับแรก ----**\n'
         for i in range(10):
-            message += f"\n{board[i][0]} with score {board[i][1]}"
+            message += f"\n            {board[i][0]} with score {board[i][1]}"
+        message += f"\n\n**--------------------------------------**"
         channel = self.bot.get_channel(channelMap[channel_name])
         await channel.send(content=message)
         await inter.send("Message has been sent")
@@ -96,7 +97,9 @@ class Announcement(commands.Cog):
         for c in channels:
             channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
         channel = self.bot.get_channel(channelMap[channel_name])
-        await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง /profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**')
+        await channel.send(f'**------------------------------------------------------------**\n')
+        await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง /profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**\n')
+        await channel.send(f'**------------------------------------------------------------**')
         await inter.send('Announced')
     
     @firstannounce.autocomplete('channel_name')

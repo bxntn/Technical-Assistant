@@ -63,7 +63,7 @@ class Request(commands.Cog):
             print(f"An error occurred: {error}")
             return error
 
-        message = '**ข้อความจะถูกลบใน 60 วินาที**\n'
+        message = '**---- ข้อความจะถูกลบใน 60 วินาที ----**\n'
 
         for i,data in enumerate(databoard):
             if str(inter.author.id) in data:
