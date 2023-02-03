@@ -69,6 +69,7 @@ class Announcement(commands.Cog):
         channel = self.bot.get_channel(channelMap[channel_name])
         await channel.send(content=message)
         await inter.send("Message has been sent")
+        print(f'\nranking annouce succesfully')
 
     @annouce_rank.autocomplete('channel_name')
     async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, channel_name: str):
@@ -101,6 +102,7 @@ class Announcement(commands.Cog):
         await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง /profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**\n')
         await channel.send(f'**------------------------------------------------------------**')
         await inter.send('Announced')
+        print(f"\nfirst announce successful")
     
     @firstannounce.autocomplete('channel_name')
     async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, ch_name: str):

@@ -43,7 +43,7 @@ class Request(commands.Cog):
             service = build('sheets', 'v4', credentials=creds)
 
             dataResult = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:AB').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:Z').execute()
             scoreResult = service.spreadsheets().values().get(
                 spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A1:B').execute()
             accountResult = service.spreadsheets().values().get(
