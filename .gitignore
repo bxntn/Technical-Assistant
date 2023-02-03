@@ -1,10 +1,13 @@
 __pycache__
 /.vscode
 /config/config_history
-
+/config/config.ini
+/logs
 /babel/v1.x/*
 /babel/v2.0/*
 /config/v1.x/*
 /config/v2.0/*
+credentials.json
+token.json
 *.DS_Store
 
