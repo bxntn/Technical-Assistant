@@ -17,8 +17,8 @@ class Request(commands.Cog):
 
     @commands.cooldown(1, 1)
     @commands.dm_only()
-    @commands.default_member_permissions(manage_guild=True, moderate_members=True)
-    @commands.slash_command(name='profile',
+    # @commands.default_member_permissions(manage_guild=True, moderate_members=True)
+    @commands.command(name='profile',
                             description='Get password for bootcamp website')
     async def request_key(
         self,
@@ -43,7 +43,7 @@ class Request(commands.Cog):
             service = build('sheets', 'v4', credentials=creds)
 
             dataResult = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:Z').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A1:Y').execute()
             scoreResult = service.spreadsheets().values().get(
                 spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A1:B').execute()
             accountResult = service.spreadsheets().values().get(
@@ -64,13 +64,21 @@ class Request(commands.Cog):
             return error
 
         message = '**---- ข้อความจะถูกลบใน 60 วินาที ----**\n'
+        message2 = ''
 
         for i,data in enumerate(databoard):
+            # if str(1065206597833461850) in data
             if str(inter.author.id) in data:
-                message += f'\n**Bootcamp ID**: {data[1]} \n**Email**: {accountboard[i][1]} \n**Technical Preflop App Password**: {accountboard[i][2]} \n**คะแนนรวม**: {scoreboard[i][1]}'
-        if not message:
-            message += '\nNot found your id in database'
+                # scoreIndex = np.argwhere(scoreboard == str(inter.author.id))
+                # accountIndex = np.argwhere(accountboard == str(inter.author.id))
+                # email = accountboard[accountIndex[0][0]]
+                message2 += f'\n**Bootcamp ID**: {data[1]} \n**Email**: {accountboard[i][1]} \n**Technical Preflop App Password**: {accountboard[i][2]} \n**คะแนนรวม**: {scoreboard[i][1]}'
+        if not message2:
+            message += '\n**Not found your id in database**'
+        else:
+            message += message2
         await inter.send(content=message, delete_after=60.0)
+        print('Access profile successfully')
 
 
 

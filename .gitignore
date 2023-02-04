@@ -6,4 +6,8 @@ __pycache__
 /config/v1.x/*
 /config/v2.0/*
 *.DS_Store
+/credentials.json
+/token.json
+/config/config.ini
+/config/config_history
 

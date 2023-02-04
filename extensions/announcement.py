@@ -2,7 +2,7 @@ import disnake
 from disnake.ext import commands
 
 import pandas as pd
-import numpy
+import numpy as np
 
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -42,15 +42,21 @@ class Announcement(commands.Cog):
             result = service.spreadsheets().values().get(
                 spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='total_score!A:B').execute()
             rows = result.get('values', [])
+            info = service.spreadsheets().values().get(
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A:Y').execute()
+            inforows = info.get('values', [])
 
         except HttpError as error:
             print(f"An error occurred: {error}")
             return error
         
         df = pd.DataFrame(rows[1:],columns=rows[0])
+        infodf = pd.DataFrame(inforows[1:],columns=inforows[0])
         
         temp_board = df.sort_values(by=['total_score'],axis=0,ascending=False)
         board = temp_board[['ID','total_score']].values.tolist()
+        infotempboard = infodf[['ID','Discord ID']].values.tolist()
+        infoboard = np.array(infotempboard)
         
         guilds = self.bot.guilds
         channels = []
@@ -62,10 +68,18 @@ class Announcement(commands.Cog):
         for c in channels:
             channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
 
-        message = f'**---- คะแนนรวมสูงสุด 10 อันดับแรก ----**\n'
+        message =  f'**----- คะแนนรวมสูงสุด 10 อันดับแรก -----**\n'
+        message += f'\n                         🎊   🏆   🎊                 \n'
         for i in range(10):
-            message += f"\n            {board[i][0]} with score {board[i][1]}"
-        message += f"\n\n**--------------------------------------**"
+            emoji = '      '
+            if i == 0 : emoji = '🥇'
+            if i == 1 : emoji = '🥈'
+            if i == 2 : emoji = '🥉'
+            memberindex = np.argwhere(infoboard == board[i][0])
+            memberDid = infoboard[memberindex[0][0]][1]
+
+            message += f"\n           {emoji}  {memberDid} คะแนน {board[i][1]}"
+        message += f"\n\n**----------------------------------------**"
         channel = self.bot.get_channel(channelMap[channel_name])
         await channel.send(content=message)
         await inter.send("Message has been sent")
@@ -99,7 +113,7 @@ class Announcement(commands.Cog):
             channelMap[f"[{c.guild.name}] {c.name}"] = int(c.id)
         channel = self.bot.get_channel(channelMap[channel_name])
         await channel.send(f'**------------------------------------------------------------**\n')
-        await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง /profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**\n')
+        await channel.send(f'**ตอนนี้สามารถใช้คำสั่ง !profile ที่ Direct Message ของผมเพื่อขอข้อมูลส่วนตัวได้เลยนะครับ**\n')
         await channel.send(f'**------------------------------------------------------------**')
         await inter.send('Announced')
         print(f"\nfirst announce successful")

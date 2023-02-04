@@ -18,19 +18,21 @@ class TpBot(commands.AutoShardedBot):
 	config = Config()
 	babel = Babel(config)
 	verbose = False
+	SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 	# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config['googlesheet']['credential']
 	# print(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
  
 	creds = None
 	if os.path.exists('token.json'):
-		creds = Credentials.from_authorized_user_file('token.json', config['googlesheet']['scope'])
+		creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 	# If there are no (valid) credentials available, let the user log in.
 	if not creds or not creds.valid:
 		if creds and creds.expired and creds.refresh_token:
+			print("request refresh")
 			creds.refresh(Request())
 		else:
 			flow = InstalledAppFlow.from_client_secrets_file(
-				config['googlesheet']['credential'], config['googlesheet']['scope'])
+				config['googlesheet']['credential'], SCOPES)
 			creds = flow.run_local_server(port=0)
    # Save the credentials for the next run
 		with open('token.json', 'w') as token:

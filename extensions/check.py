@@ -25,7 +25,7 @@ class Check(commands.Cog):
             service = build('sheets', 'v4', credentials=creds)
             print("service build successful\n")
             result = service.spreadsheets().values().get(
-                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A:Z').execute()
+                spreadsheetId=self.bot.config['googlesheet']['main_sheet'], range='info!A:Y').execute()
             rows = result.get('values', [])
 
         except HttpError as error:
@@ -101,13 +101,6 @@ class Check(commands.Cog):
             print(f"An error occurred: {error}")
             return error
 
-    @check_homework.autocomplete("homework")
-    async def key_autocomp(inter: disnake.ApplicationCommandInteraction, user_input: str):
-        KEY_OF = ("spot_homework", "introduce","milestones")
-        return [key
-                for key in KEY_OF
-                if user_input.lower() in key.lower()
-                ]
 
     @check_homework.autocomplete('channel_name')
     async def channel_autocomp(self,inter:disnake.ApplicationCommandInteraction, channel_name: str):
